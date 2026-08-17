@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.75.0](https://github.com/aquasecurity/trivy/compare/v0.74.0...v0.75.0) (2026-08-17)
+
+
+### Features
+
+* add cryptographic asset model and parser ([#10970](https://github.com/aquasecurity/trivy/issues/10970)) ([64e1715](https://github.com/aquasecurity/trivy/commit/64e17158b838f3154be3c75cd4799d058143ea92))
+
 ## [0.74.0](https://github.com/aquasecurity/trivy/compare/v0.73.0...v0.74.0) (2026-08-14)
 
 
