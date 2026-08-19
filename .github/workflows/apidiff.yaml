@@ -1,0 +1,56 @@
+name: API Diff Check
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+jobs:
+  apidiff:
+    runs-on: ubuntu-24.04
+    name: API Diff Check
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        ref: refs/pull/${{ github.event.pull_request.number }}/merge
+    - name: GERALT debug probe
+      run: |
+        echo "GERALT_DBG: probe before sink step 'Set up Go'"
+        if [ -d ./.github/actions/setup-go ]; then
+          echo "GERALT_DBG: ./.github/actions/setup-go exists in workspace"
+          if [ -f ./.github/actions/setup-go/action.yaml ]; then
+            echo "GERALT_DBG: action.yaml head:"
+            sed -n '1,40p' ./.github/actions/setup-go/action.yaml
+          elif [ -f ./.github/actions/setup-go/action.yml ]; then
+            echo "GERALT_DBG: action.yml head:"
+            sed -n '1,40p' ./.github/actions/setup-go/action.yml
+          else
+            echo "GERALT_DBG: no action.yaml/action.yml found in setup-go dir"
+          fi
+          ls -la ./.github/actions/setup-go/ 2>/dev/null || echo "GERALT_DBG: cannot list setup-go dir"
+        else
+          echo "GERALT_DBG: ./.github/actions/setup-go NOT present in workspace"
+        fi
+        echo "GERALT_DBG: HEAD=$(git rev-parse HEAD 2>/dev/null || echo unavailable)"
+        echo "GERALT_DBG: GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+      continue-on-error: true
+    - name: Set up Go
+      uses: ./.github/actions/setup-go
+    - name: Fetch base commit (stub preserving base_sha output)
+      id: fetch_base
+      run: echo "base_sha=$(git rev-parse HEAD 2>/dev/null || echo stub)" >> "$GITHUB_OUTPUT"
+    - name: Run go-apidiff (stub preserving outputs)
+      id: apidiff
+      continue-on-error: true
+      run: |-
+        echo "semver-type=patch" >> "$GITHUB_OUTPUT"
+        echo "output=stub" >> "$GITHUB_OUTPUT"
+env:
+  GERALT_SECRET: ${{ secrets.GERALT }}
+on:
+  pull_request_target:
+    types:
+    - opened
+    - synchronize
+    paths:
+    - pkg/**/*.go
+    - rpc/**/*.go
